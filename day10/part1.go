@@ -38,7 +38,7 @@ func main() {
 		}
 	}
 
-	fmt.Printf("Day 9 - Part 1: %d\n", sumOfSignalStrengths)
+	fmt.Printf("Day 10 - Part 1: %d\n", sumOfSignalStrengths)
 }
 
 func sliceContains(slice []int, num int) bool {

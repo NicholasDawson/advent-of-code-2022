@@ -16,7 +16,7 @@ func main() {
 	}
 	defer file.Close()
 
-	fmt.Println("Day 9 - Part 2:")
+	fmt.Println("Day 10 - Part 2:")
 
 	x := 1
 	addCycle := 0
