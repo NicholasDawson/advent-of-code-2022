@@ -20,17 +20,21 @@ type Monkey struct {
 	itemsInspected  int
 }
 
-func (m *Monkey) getMonkeyToThrowTo(newItem int) int {
+func (m *Monkey) getMonkeyToThrowTo(newItem int, debug bool) int {
 	if newItem%m.testDivisibleBy == 0 {
-		fmt.Printf("\t\tCurrent worry level is divisible by %d.\n", m.testDivisibleBy)
+		if debug {
+			fmt.Printf("\t\tCurrent worry level is divisible by %d.\n", m.testDivisibleBy)
+		}
 		return m.testTrueMonkey
 	} else {
-		fmt.Printf("\t\tCurrent worry level is not divisible by %d.\n", m.testDivisibleBy)
+		if debug {
+			fmt.Printf("\t\tCurrent worry level is not divisible by %d.\n", m.testDivisibleBy)
+		}
 		return m.testFalseMonkey
 	}
 }
 
-func (m *Monkey) applyOperator(old int) int {
+func (m *Monkey) applyOperator(old int, debug bool) int {
 	// if operand is 0 then use old as operand
 	operand := m.operand
 	if operand == 0 {
@@ -39,16 +43,24 @@ func (m *Monkey) applyOperator(old int) int {
 
 	switch m.operator {
 	case "+":
-		fmt.Printf("\t\tWorry level is increased by %d to %d.\n", operand, old+operand)
+		if debug {
+			fmt.Printf("\t\tWorry level is increased by %d to %d.\n", operand, old+operand)
+		}
 		return old + operand
 	case "-":
-		fmt.Printf("\t\tWorry level is decreased by %d to %d.\n", operand, old-operand)
+		if debug {
+			fmt.Printf("\t\tWorry level is decreased by %d to %d.\n", operand, old-operand)
+		}
 		return old - operand
 	case "*":
-		fmt.Printf("\t\tWorry level is multiplied by %d to %d.\n", operand, old*operand)
+		if debug {
+			fmt.Printf("\t\tWorry level is multiplied by %d to %d.\n", operand, old*operand)
+		}
 		return old * operand
 	case "/":
-		fmt.Printf("\t\tWorry level is divided by %d to %d.\n", operand, old/operand)
+		if debug {
+			fmt.Printf("\t\tWorry level is divided by %d to %d.\n", operand, old/operand)
+		}
 		return old / operand
 	default:
 		log.Fatal("BAD")
@@ -57,7 +69,8 @@ func (m *Monkey) applyOperator(old int) int {
 }
 
 func main() {
-	file, err := os.Open("day11/given")
+	const debug = false
+	file, err := os.Open("day11/input")
 	if err != nil {
 		log.Fatalf("Error reading file")
 	}
@@ -119,28 +132,38 @@ func main() {
 	// Process 20 turns
 	for turn := 0; turn < 20; turn++ {
 		for monkeyIndex, monkey := range monkeys {
-			fmt.Printf("Monkey %d:\n", monkeyIndex)
+			if debug {
+				fmt.Printf("Monkey %d:\n", monkeyIndex)
+			}
 			for _, item := range monkey.items {
-				fmt.Printf("\tMonkey inspects an item with a worry level of %d.\n", item)
-				newItem := monkey.applyOperator(item)
+				if debug {
+					fmt.Printf("\tMonkey inspects an item with a worry level of %d.\n", item)
+				}
+				newItem := monkey.applyOperator(item, debug)
 				newItem /= 3
-				fmt.Printf("\t\tMonkey gets bored with item. Worry level is divided by 3 to %d.\n", newItem)
-				monkeyToThrowTo := monkey.getMonkeyToThrowTo(newItem)
-				fmt.Printf("\t\tItem with worry level %d is thrown to monkey %d.\n", newItem, monkeyToThrowTo)
+				if debug {
+					fmt.Printf("\t\tMonkey gets bored with item. Worry level is divided by 3 to %d.\n", newItem)
+				}
+				monkeyToThrowTo := monkey.getMonkeyToThrowTo(newItem, debug)
+				if debug {
+					fmt.Printf("\t\tItem with worry level %d is thrown to monkey %d.\n", newItem, monkeyToThrowTo)
+				}
 				monkeys[monkeyToThrowTo].items = append(monkeys[monkeyToThrowTo].items, newItem) // Prepend
 				monkeyInspections[monkeyIndex]++
 			}
 			monkey.items = []int{} // clear current monkeys items after processing
 		}
-		fmt.Printf("After round %d, the monkeys are holding items with these worry levels:\n", turn+1)
-		for monkeyIndex, monkey := range monkeys {
-			fmt.Printf("Monkey %d: ", monkeyIndex)
-			for _, item := range monkey.items {
-				fmt.Printf("%d, ", item)
+		if debug {
+			fmt.Printf("After round %d, the monkeys are holding items with these worry levels:\n", turn+1)
+			for monkeyIndex, monkey := range monkeys {
+				fmt.Printf("Monkey %d: ", monkeyIndex)
+				for _, item := range monkey.items {
+					fmt.Printf("%d, ", item)
+				}
+				fmt.Println()
 			}
 			fmt.Println()
 		}
-		fmt.Println()
 	}
 
 	sort.Ints(monkeyInspections)
