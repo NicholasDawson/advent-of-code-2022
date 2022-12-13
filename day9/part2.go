@@ -11,43 +11,35 @@ import (
 	"strings"
 )
 
-type Rope struct {
-	visitedTPositions []image.Point
-	point             image.Point
-	tail              *Rope
-}
-
 func main() {
-	file, err := os.Open("day9/given2")
+	file, err := os.Open("day9/input")
 	if err != nil {
 		log.Fatalf("Error reading file")
 	}
-	defer file.Close()
+	defer func(file *os.File) {
+		err := file.Close()
+		if err != nil {
+			log.Println("Error closing file...", err)
+		}
+	}(file)
 
 	// Create rope
-	head := &Rope{}
-	tail := head
-	for i := 0; i < 9; i++ {
-		newRope := &Rope{}
-		tail.tail = newRope
-		tail = newRope
+	var rope []image.Point
+	const ropeLength = 10
+	for i := 0; i < ropeLength; i++ {
+		rope = append(rope, image.Point{})
 	}
+	ropeLen := len(rope)
+
+	// Keep track of positions the tail visited
+	var visitedTailPositions []image.Point
+
+	printRope(rope)
 
 	var line string
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		line = scanner.Text()
-
-		currentRope := head
-		ropeIndex := 0
-		for currentRope != nil {
-			fmt.Printf("%d %s\n", ropeIndex, currentRope.point)
-			currentRope = currentRope.tail
-			ropeIndex++
-		}
-
-		fmt.Println()
-		fmt.Println()
 		fmt.Println(line)
 
 		tokens := strings.Split(line, " ")
@@ -56,119 +48,123 @@ func main() {
 
 		switch direction {
 		case "U":
-			head.up(distance)
+			for i := 0; i < distance; i++ {
+				adjustRope(ropeLen, rope, &visitedTailPositions, 0, 1)
+				//printRope(rope)
+			}
 		case "D":
-			head.down(distance)
+			for i := 0; i < distance; i++ {
+				adjustRope(ropeLen, rope, &visitedTailPositions, 0, -1)
+				//printRope(rope)
+			}
 		case "L":
-			head.left(distance)
+			for i := 0; i < distance; i++ {
+				adjustRope(ropeLen, rope, &visitedTailPositions, -1, 0)
+				//printRope(rope)
+			}
 		case "R":
-			head.right(distance)
+			for i := 0; i < distance; i++ {
+				adjustRope(ropeLen, rope, &visitedTailPositions, 1, 0)
+				//printRope(rope)
+			}
 		}
 	}
 
-	fmt.Printf("Day 9 - Part 2: %d\n", len(tail.visitedTPositions))
+	fmt.Printf("Day 9 - Part 2: %d\n", len(visitedTailPositions))
 }
 
-func (r *Rope) visitedPoint(point image.Point) bool {
-	for _, element := range r.visitedTPositions {
+func visitPoint(point image.Point, visitedList *[]image.Point) {
+	for _, element := range *visitedList {
 		if element == point {
-			return true
+			return
 		}
 	}
-	return false
-}
-func (r *Rope) addPointToVisited() {
-	newPoint := image.Point{
-		X: r.point.X,
-		Y: r.point.Y,
-	}
-	if !r.visitedPoint(newPoint) {
-		r.visitedTPositions = append(r.visitedTPositions, newPoint)
-	}
+	*visitedList = append(*visitedList, point)
 }
 
-//func (r *Rope) adjustTail() {
-//	if r.tail == nil { // Ignore last rope segment
-//		r.addPointToVisited()
-//		return
-//	}
-//
-//	xDiff := r.point.X - r.tail.point.X
-//	yDiff := r.point.Y - r.tail.point.Y
-//
-//	xDiffAbs := math.Abs(float64(xDiff))
-//	yDiffAbs := math.Abs(float64(yDiff))
-//
-//	// Diagonal Adjustment
-//	if xDiffAbs == 2 && yDiffAbs == 1 {
-//		r.tail.point.X += xDiff / 2
-//		r.tail.point.Y += yDiff
-//		r.addPointToVisited()
-//		r.tail.adjustTail()
-//		return
-//	} else if xDiffAbs == 1 && yDiffAbs == 2 {
-//		r.tail.point.X += xDiff
-//		r.tail.point.Y += yDiff / 2
-//		r.addPointToVisited()
-//		r.tail.adjustTail()
-//		return
-//	}
-//
-//	// Normal adjustment of tail keeping up
-//	if xDiff == 2 {
-//		r.tail.point.X++
-//	} else if xDiff == -2 {
-//		r.tail.point.X--
-//	} else if yDiff == 2 {
-//		r.tail.point.Y++
-//	} else if yDiff == -2 {
-//		r.tail.point.Y--
-//	}
-//	r.addPointToVisited()
-//	r.tail.adjustTail()
-//}
+func adjustRope(ropeLen int, rope []image.Point, visitedList *[]image.Point, xAdd, yAdd int) {
+	// Move head
+	rope[0].X += xAdd
+	rope[0].Y += yAdd
 
-func (r *Rope) adjustTail() {
-	if r.tail == nil { // Ignore last rope segment
-		r.addPointToVisited()
+	// Ensure we only adjust when the rope is at least 2 away
+	headDiff := rope[0].Sub(rope[1])
+	xDiffAbs := math.Abs(float64(headDiff.X))
+	yDiffAbs := math.Abs(float64(headDiff.Y))
+	if xDiffAbs <= 1 && yDiffAbs <= 1 {
 		return
 	}
 
-	xDiff := r.point.X - r.tail.point.X
-	yDiff := r.point.Y - r.tail.point.Y
+	// Iterate through rest of points of rope and adjust them
+	for index, point := range rope[1:] {
+		index++ // Adjust index to account for removed head element
 
-	xDiffAbs := math.Abs(float64(xDiff))
-	yDiffAbs := math.Abs(float64(yDiff))
+		pointDiff := rope[index-1].Sub(point)
+		pointXDiffAbs := math.Abs(float64(pointDiff.X))
+		pointYDiffAbs := math.Abs(float64(pointDiff.Y))
 
-	if xDiffAbs >= 2 || yDiffAbs >= 2 {
-		r.tail.point.X = r.point.X
-		r.tail.point.Y = r.point.Y
+		// Check for diagonal movement
+		if pointXDiffAbs <= 1 && pointYDiffAbs <= 1 {
+			if index == ropeLen-1 {
+				// Visit point for tail
+				visitPoint(rope[index], visitedList)
+			}
+			return
+		} else if pointXDiffAbs == 2 && pointYDiffAbs == 1 {
+			rope[index].X += pointDiff.X / 2
+			rope[index].Y += pointDiff.Y
+		} else if pointXDiffAbs == 1 && pointYDiffAbs == 2 {
+			rope[index].X += pointDiff.X
+			rope[index].Y += pointDiff.Y / 2
+		} else {
+			if pointDiff.X == 2 {
+				rope[index].X++
+			} else if pointDiff.X == -2 {
+				rope[index].X--
+			}
+			if pointDiff.Y == 2 {
+				rope[index].Y++
+			} else if pointDiff.Y == -2 {
+				rope[index].Y--
+			}
+		}
+
+		if index == ropeLen-1 {
+			// Visit point for tail
+			visitPoint(rope[index], visitedList)
+		}
 	}
-	r.addPointToVisited()
-	r.tail.adjustTail()
 }
 
-func (r *Rope) up(distance int) {
-	for i := 0; i < distance; i++ {
-		r.adjustTail()
-		r.point.Y++
+func printRope(rope []image.Point) {
+	// Display grid
+	for y := 16 - 1; y >= -5; y-- {
+		var covering []string
+		for x := -11; x < 15; x++ {
+			printedChar := false
+			for knotIndex, knot := range rope {
+				if knot.X == x && knot.Y == y {
+					if !printedChar {
+						if knotIndex == 0 {
+							fmt.Print("H")
+						} else {
+							fmt.Print(knotIndex)
+						}
+						printedChar = true
+					} else {
+						covering = append(covering, strconv.Itoa(knotIndex))
+					}
+				}
+			}
+			if !printedChar {
+				fmt.Print(".")
+			}
+		}
+		if covering != nil {
+			fmt.Printf("  (covering %s)", strings.Join(covering, ", "))
+		}
+		fmt.Println()
 	}
-}
-func (r *Rope) down(distance int) {
-	for i := 0; i < distance; i++ {
-		r.adjustTail()
-		r.point.Y--
-	}
-}
-func (r *Rope) left(distance int) {
-	for i := 0; i < distance; i++ {
-		r.adjustTail()
-		r.point.X--
-	}
-}
-func (r *Rope) right(distance int) {
-	for i := 0; i < distance; i++ {
-		r.adjustTail()
-		r.point.X++
-	}
+	fmt.Println()
+
 }
