@@ -22,7 +22,7 @@ func getLetterPriority(letter rune) int32 {
 }
 
 func partOne() {
-	file, err := os.Open("day3/input")
+	file, err := os.Open("day03/input")
 	if err != nil {
 		log.Fatalf("Error reading file")
 	}
@@ -52,7 +52,7 @@ func partOne() {
 }
 
 func partTwo() {
-	file, err := os.Open("day3/input")
+	file, err := os.Open("day03/input")
 	if err != nil {
 		log.Fatalf("Error reading file")
 	}

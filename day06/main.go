@@ -22,7 +22,7 @@ func sliceContains(slice []uint8, char uint8) bool {
 }
 
 func partOne() int {
-	file, err := os.Open("day6/input")
+	file, err := os.Open("day06/input")
 	if err != nil {
 		log.Fatalf("Error reading file")
 	}
@@ -54,7 +54,7 @@ func partOne() int {
 }
 
 func partTwo() int {
-	file, err := os.Open("day6/input")
+	file, err := os.Open("day06/input")
 	if err != nil {
 		log.Fatalf("Error reading file")
 	}

@@ -13,7 +13,7 @@ import (
 var allDirSizes = make([]int, 100)
 
 func main() {
-	file, err := os.Open("day7/input")
+	file, err := os.Open("day07/input")
 	if err != nil {
 		log.Fatalf("Error reading file")
 	}

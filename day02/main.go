@@ -57,7 +57,7 @@ func partOne() {
 		'Z': Scissors,
 	}
 
-	file, err := os.Open("day2/input")
+	file, err := os.Open("day02/input")
 	if err != nil {
 		log.Fatalf("Error reading file")
 	}
@@ -112,7 +112,7 @@ func partTwo() {
 		Scissors: Paper,
 	}
 
-	file, err := os.Open("day2/input")
+	file, err := os.Open("day02/input")
 	if err != nil {
 		log.Fatalf("Error reading file")
 	}

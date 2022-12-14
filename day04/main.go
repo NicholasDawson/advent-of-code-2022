@@ -15,7 +15,7 @@ func main() {
 }
 
 func partOne() {
-	file, err := os.Open("day4/input")
+	file, err := os.Open("day04/input")
 	if err != nil {
 		log.Fatalf("Error reading file")
 	}
@@ -51,7 +51,7 @@ func partOne() {
 }
 
 func partTwo() {
-	file, err := os.Open("day4/input")
+	file, err := os.Open("day04/input")
 	if err != nil {
 		log.Fatalf("Error reading file")
 	}
