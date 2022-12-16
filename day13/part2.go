@@ -6,11 +6,12 @@ import (
 	"log"
 	"os"
 	"reflect"
+	"sort"
 	"strconv"
 )
 
 func main() {
-	file, err := os.Open("day13/input")
+	file, err := os.Open("day13/input2")
 	if err != nil {
 		log.Fatalf("Error reading file")
 	}
@@ -21,26 +22,34 @@ func main() {
 		}
 	}(file)
 
-	var line1, line2 string
-	sumOfIndicesInRightOrder := 0
+	var line string
+	var packets [][]any
 	scanner := bufio.NewScanner(file)
-	for pairIndex := 1; scanner.Scan(); pairIndex++ {
-		line1 = scanner.Text()
-		scanner.Scan()
-		line2 = scanner.Text()
-		scanner.Scan() // Remove trailing new line
+	for scanner.Scan() {
+		line = scanner.Text()
+		if line == "" {
+			continue
+		}
 
-		packet1 := stringToList(line1)
-		packet2 := stringToList(line2)
+		packet := stringToList(line)
+		packets = append(packets, packet)
+	}
 
-		fmt.Printf("== Pair %d ==\n", pairIndex)
-		if isListValid(packet1, packet2) == 1 {
-			fmt.Printf("Adding %d to %d\n", pairIndex, sumOfIndicesInRightOrder)
-			sumOfIndicesInRightOrder += pairIndex
+	sort.Slice(packets, func(i, j int) bool {
+		return isListValid(packets[i], packets[j]) == 1
+	})
+
+	var divider1, divider2 int
+	for index, packet := range packets {
+		index++
+		if reflect.DeepEqual(packet, []any{[]any{2}}) {
+			divider1 = index
+		} else if reflect.DeepEqual(packet, []any{[]any{6}}) {
+			divider2 = index
 		}
 	}
 
-	fmt.Printf("Day 13 - Part 1: %d\n", sumOfIndicesInRightOrder)
+	fmt.Printf("Day 13 - Part 2: %d\n", divider1*divider2)
 }
 
 func stringToList(text string) []any {
